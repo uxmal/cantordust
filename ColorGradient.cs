@@ -1,11 +1,10 @@
-public class ColorGradient extends ColorSource {
-    public ColorGradient(Cantordust cantordust, byte[] data) {
-        super(cantordust, data);
+public class ColorGradient : ColorSource {
+    public ColorGradient(Cantordust cantordust, byte[] data) :
+        base(cantordust, data) {
         this.type = "gradient";
     }
 
-    @Override
-    public Rgb getPoint(int x) {
+    public override Rgb getPoint(int x) {
         double c = (int)(data[x])/255.0;
         return new Rgb(
             (int)(255*c), 

@@ -1,3 +1,7 @@
+using System.Drawing;
+using System.IO;
+using System.Windows.Forms;
+
 import ghidra.app.script.GhidraScript;
 import ghidra.program.model.address.Address;
 import ghidra.program.model.address.AddressSet;
@@ -9,40 +13,35 @@ import ghidra.program.model.mem.MemoryAccessException;
 import ghidra.program.database.mem.FileBytes;
 import ghidra.program.database.mem.*;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.UnknownHostException;
+using System.IO;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.io.OutputStreamWriter;
-import java.io.FileOutputStream;
-import java.nio.charset.StandardCharsets;
 
-import javax.swing.*;
-
-public class Cantordust extends GhidraScript {
+public class Cantordust : GhidraScript {
     public MainInterface mainInterface;
-    public String currentDirectory;
-    public String name;
-    private boolean DEBUG = false;
+    public string currentDirectory;
+    public string name;
+    private bool DEBUG = false;
 
     private ClassifierModel classifier;
-    private boolean classifierInitialized = false;
+    private bool classifierInitialized = false;
 
-    @Override
-    protected void run() throws Exception {
-        currentDirectory = sourceFile.getAbsolutePath();
-        currentDirectory = currentDirectory.substring(0, currentDirectory.length()-15);
+    protected override void run() {
+        currentDirectory = Path.GetFullPath(sourceFile);
+        currentDirectory = currentDirectory.Substring(0, currentDirectory.Length-15);
         name = currentProgram.getName();
         writeBinLocation();
-        JFrame frame = new JFrame(String.format("..cantor.dust..    :   %s", name));
+        var frame = new Form
+        {
+            Text = string.Format("..cantor.dust..    :   {0}", name)
+        };
         mainInterface = new MainInterface(getData(), this, frame);
-        frame.getContentPane().add(mainInterface);
-        frame.setSize(MainInterface.getWindowWidth(), MainInterface.getWindowHeight());
-        frame.setVisible(true);
-        frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        frame.Controls.Add(mainInterface);
+        frame.Size  =  new Size(MainInterface.getWindowWidth(), MainInterface.getWindowHeight());
+        frame.Visible = true;
+        //frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
         /*JFrame frame2 = new JFrame();
         ThreeTupleVisualizer vis = new ThreeTupleVisualizer(this, null, frame2);
@@ -52,7 +51,7 @@ public class Cantordust extends GhidraScript {
         vis.paintGL();*/
     }
 
-    public void cdprint(String s){
+    public void cdprint(string s){
         if(DEBUG){
             print(s);
         }
@@ -60,7 +59,7 @@ public class Cantordust extends GhidraScript {
 
     public byte[] getData(){
         byte[] data = getJavaData();
-        if(data.length == 0){
+        if(data.Length == 0){
             data = getGhidraData();
         }
         return data;
@@ -98,7 +97,7 @@ public class Cantordust extends GhidraScript {
     }
 
     public byte[] getJavaData() {
-        String path = currentProgram.getExecutablePath();
+        string path = currentProgram.getExecutablePath();
         if(System.getProperty("os.name").equals("Windows 10") && (path.charAt(0) == '\\' || path.charAt(0) == '/')) {
             path = path.substring(1);
         }
@@ -169,7 +168,7 @@ public class Cantordust extends GhidraScript {
     /**
      * Sets the current address in Ghidra to a specific file offset
      */
-    public boolean gotoFileAddress(long addr) {
+    public bool gotoFileAddress(long addr) {
         Address ghidraAddr = getGhidraAddress(addr);
 
         // Make an AddressSet based on ghidraAddr

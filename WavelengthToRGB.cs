@@ -1,9 +1,10 @@
-import java.awt.Color;
+using System;
+using System.Drawing;
 
 public class WavelengthToRGB {
     public static Color waveLengthToRGB(double wavelength) {
         int encodedRGB = wavelengthToRGBinteger(wavelength);
-        return new Color((encodedRGB & 0xff0000) >> 16, (encodedRGB & 0xff) >> 8, encodedRGB & 0xff);
+        return Color.FromArgb((encodedRGB & 0xff0000) >> 16, (encodedRGB & 0xff) >> 8, encodedRGB & 0xff);
     }
     /*
         Convert a wavelength in the visible light spectrum to a RGB color value that is suitable to be displayed on a
@@ -57,7 +58,7 @@ public class WavelengthToRGB {
     private static double srgbXYZ2RGBPostprocess(double c) {
         c = c > 1 ? 1 : (c < 0 ? 0 : c);
 
-        c = c <= 0.0031308 ? c * 12.92 : 1.055 * Math.pow(c, 1. / 2.4) - 0.055;
+        c = c <= 0.0031308 ? c * 12.92 : 1.055 * Math.Pow(c, 1.0 / 2.4) - 0.055;
 
         return c;
     }
@@ -81,9 +82,9 @@ public class WavelengthToRGB {
             double t2 = (wave - 599.8) * ((wave < 599.8) ? 0.0264 : 0.0323);
             double t3 = (wave - 501.1) * ((wave < 501.1) ? 0.0490 : 0.0382);
 
-            x =   0.362 * Math.exp(-0.5 * t1 * t1)
-                    + 1.056 * Math.exp(-0.5 * t2 * t2)
-                    - 0.065 * Math.exp(-0.5 * t3 * t3);
+            x =   0.362 * Math.Exp(-0.5 * t1 * t1)
+                    + 1.056 * Math.Exp(-0.5 * t2 * t2)
+                    - 0.065 * Math.Exp(-0.5 * t3 * t3);
         }
 
         double y;
@@ -91,8 +92,8 @@ public class WavelengthToRGB {
             double t1 = (wave - 568.8) * ((wave < 568.8) ? 0.0213 : 0.0247);
             double t2 = (wave - 530.9) * ((wave < 530.9) ? 0.0613 : 0.0322);
 
-            y =   0.821 * Math.exp(-0.5 * t1 * t1)
-                    + 0.286 * Math.exp(-0.5 * t2 * t2);
+            y =   0.821 * Math.Exp(-0.5 * t1 * t1)
+                    + 0.286 * Math.Exp(-0.5 * t2 * t2);
         }
 
         double z;
@@ -100,8 +101,8 @@ public class WavelengthToRGB {
             double t1 = (wave - 437.0) * ((wave < 437.0) ? 0.0845 : 0.0278);
             double t2 = (wave - 459.0) * ((wave < 459.0) ? 0.0385 : 0.0725);
 
-            z =   1.217 * Math.exp(-0.5 * t1 * t1)
-                    + 0.681 * Math.exp(-0.5 * t2 * t2);
+            z =   1.217 * Math.Exp(-0.5 * t1 * t1)
+                    + 0.681 * Math.Exp(-0.5 * t2 * t2);
         }
 
         return new double[] { x, y, z };

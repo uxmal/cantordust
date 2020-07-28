@@ -1,11 +1,11 @@
-public class ColorClass extends ColorSource {
-    public ColorClass(Cantordust cantordust, byte[] data) {
-        super(cantordust, data);
+public class ColorClass : ColorSource {
+    public ColorClass(Cantordust cantordust, byte[] data) :
+        base(cantordust, data)
+    { 
         this.type = "class";
     }
 
-    @Override
-    public Rgb getPoint(int x) {
+    public override Rgb getPoint(int x) {
         int c = (int)this.data[x];
         if(c == 0){
             return new Rgb(0, 0, 0);

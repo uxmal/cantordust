@@ -1,33 +1,28 @@
 // metricMap
-import javax.swing.*;
-import javax.swing.JPanel;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import java.awt.event.*;
-import java.util.HashMap;
-import java.util.TreeSet;
-import java.awt.image.*;
-import java.awt.Color;
 
-public class MetricMap extends Visualizer{
+using System;
+using System.Collections.Generic;
+using System.Windows.Forms;
+
+public class MetricMap : Visualizer{
     protected byte[] data;
     protected static int size_hilbert = 512;
     protected int[][] pixelMap2D;
     protected int[] pixelMap1D;
-    protected HashMap<Integer, Integer> memLoc = new HashMap<Integer, Integer>();
+    protected Dictionary<int, int> memLoc = new Dictionary<int, int>();
     protected Popup popupAddr;
-    protected JPopupMenu popupMenu;
+    protected ContextMenuStrip popupMenu;
     protected Scurve map;
-    protected JPanel panel = new JPanel();
-    protected String type_plot = "square";
+    protected Panel panel = new Panel();
+    protected string type_plot = "square";
     protected ColorSource csource;
-    private JSlider dataWidthSlider;
-    private boolean inMainInterface;
-    private JLabel label;
-    private boolean isClassifier = false;
+    private ScrollBar dataWidthSlider;
+    private bool inMainInterface;
+    private Label label;
+    private bool isClassifier = false;
 
-    public MetricMap(int windowSize, Cantordust cantordust, JFrame frame, Boolean isCurrentView) {
-        super(windowSize, cantordust);
+    public MetricMap(int windowSize, Cantordust cantordust, Form frame, bool isCurrentView) :
+        base(windowSize, cantordust) {
         data = this.cantordust.mainInterface.getData();
         dataWidthSlider = mainInterface.widthSlider;
         createPopupMenu(frame);
@@ -39,118 +34,102 @@ public class MetricMap extends Visualizer{
     }
     
     // Special constructor for initialization of plugin
-    public MetricMap(int windowSize, Cantordust cantordust, MainInterface mainInterface, JFrame frame, Boolean isCurrentView) {
-        super(windowSize, cantordust, mainInterface);
+    public MetricMap(int windowSize, Cantordust cantordust, MainInterface mainInterface, Form frame, bool isCurrentView) :
+        base(windowSize, cantordust, mainInterface) {
         data = this.mainInterface.getData();
         dataWidthSlider = mainInterface.widthSlider;
         createPopupMenu(frame);
         sliderConfig();
         mouseConfig(frame, isCurrentView);
         this.csource = new ColorEntropy(this.cantordust, getCurrentData());
-        this.map = new Hilbert(this.cantordust, 2, (int)(Math.log(getWindowSize())/Math.log(2)));
-        draw();
+        this.map = new Hilbert(this.cantordust, 2, (int)(Math.Log(getWindowSize())/Math.Log(2)));
+        Invalidate();
+                Update();
     }
 
     public void sliderConfig(){
-        this.dataMicroSlider.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent changeEvent) {
-                if(!dataMicroSlider.getValueIsAdjusting() && !dataMacroSlider.getValueIsAdjusting()) {
-                    draw();
-                }
-            }
-        });
-        this.dataMacroSlider.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent changeEvent) {
-                if(!dataMacroSlider.getValueIsAdjusting()) {
-                    draw();
-                }
-            }
-        });
-        if(dataRangeSlider != null){
-            this.dataRangeSlider.addChangeListener(new ChangeListener() {
-                @Override
-                public void stateChanged(ChangeEvent changeEvent) {
-                    if(!dataRangeSlider.getValueIsAdjusting()) {
-                        data = cantordust.mainInterface.getData();
-                        draw();
-                    }
-                }
-            });
+        this.dataMicroSlider.ValueChanged += delegate {
+            Invalidate();
+                Update();
+        };
+        this.dataMacroSlider.ValueChanged += delegate {
+            Invalidate();
+                Update();
+        };
+        if (dataRangeSlider != null) {
+            this.dataRangeSlider.ValueChanged += delegate {
+                data = cantordust.mainInterface.getData();
+                Invalidate();
+                Update();
+            };
         }
-        dataWidthSlider.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                if(!dataWidthSlider.getValueIsAdjusting()) {
-                    if(map.isType("linear")){
-                        cantordust.cdprint("in linear, sliding\n");
-                        cantordust.cdprint("ch:"+dataWidthSlider.getValue()+"\n");
-                        int change = dataWidthSlider.getValue();
-                        if(change < size_hilbert){
-                            cantordust.cdprint("less\n");
-                            int inc = (size_hilbert-change)*2;
-                            change = size_hilbert+inc;
-                            map.setWidth(change);
-                            map.setHeight(size_hilbert);
-                        }else if(change > size_hilbert){
-                            cantordust.cdprint("more\n");
-                            int inc = (change-size_hilbert)*2;
-                            change = size_hilbert+inc;
-                            map.setHeight(change);
-                            map.setWidth(size_hilbert);
-                        }
-                        else{
-                            map.setWidth(size_hilbert);
-                            map.setHeight(size_hilbert);
-                        }
-                        draw();
-                    }
+        dataWidthSlider.ValueChanged += delegate
+        {
+            if (map.isType("linear"))
+            {
+                cantordust.cdprint("in linear, sliding\n");
+                cantordust.cdprint("ch:" + dataWidthSlider.Value + "\n");
+                int change = dataWidthSlider.Value;
+                if (change < size_hilbert)
+                {
+                    cantordust.cdprint("less\n");
+                    int inc = (size_hilbert - change) * 2;
+                    change = size_hilbert + inc;
+                    map.setWidth(change);
+                    map.setHeight(size_hilbert);
                 }
+                else if (change > size_hilbert)
+                {
+                    cantordust.cdprint("more\n");
+                    int inc = (change - size_hilbert) * 2;
+                    change = size_hilbert + inc;
+                    map.setHeight(change);
+                    map.setWidth(size_hilbert);
+                }
+                else
+                {
+                    map.setWidth(size_hilbert);
+                    map.setHeight(size_hilbert);
+                }
+                Invalidate();
+                Update();
             }
-        });
+        };
     }
 
-    public void mouseConfig(JFrame frame, boolean isCurrentView){
-        addMouseMotionListener(new MouseAdapter() {
-            @Override
-            public void mouseDragged(MouseEvent e) {
-                // cantordust.cdprint("dragged\n");
-                int b1 = MouseEvent.BUTTON1_DOWN_MASK;
-                int b2 = MouseEvent.BUTTON2_DOWN_MASK;
-                if ((e.getModifiersEx() & (b1 | b2)) == b1) {
-                    if(popupAddr != null) {
-                        popupAddr.hide();
-                    }
-                    if(e.getX() < size_hilbert && e.getY() < size_hilbert){
-                        if(e.getX() >= 0 && e.getY() >= 0){
-                            mousePressed(e);
-                        }
+    public void mouseConfig(Form frame, bool isCurrentView){
+        this.MouseDown += (sender, e) => {
+            // cantordust.cdprint("dragged\n");
+            if (e.Button == MouseButtons.Left) {
+                if (popupAddr != null) {
+                    popupAddr.hide();
+                }
+                if (e.X < size_hilbert && e.Y < size_hilbert) {
+                    if (e.X >= 0 && e.Y >= 0) {
+                        //mousePressed(e);
                     }
                 }
             }
-            @Override
-            public void mousePressed(MouseEvent e) {
-                MouseListener[] mA = getMouseListeners();
-                if(mA.length >= 1) {
-                    mA[0].mousePressed(e);
-                }
-            }
-        });
-        addMouseListener(new MouseAdapter() {
-            @Override
-            public void mousePressed(MouseEvent e) {
-                int b1 = MouseEvent.BUTTON1_DOWN_MASK;
-                int b2 = MouseEvent.BUTTON2_DOWN_MASK;
-                if ((e.getModifiersEx() & (b1 | b2)) == b1) {
-                    JPanel bv = MetricMap.this;
-                    JFrame metricMap = frame;
-                    int x_point=e.getX();
-                    int y_point=e.getY();
-                    int xf = metricMap.getX()+x_point;
-                    int yf = metricMap.getY()+y_point;
+        };
+        //    void mousePressed(MouseEventArgs e) {
+        //        MouseListener[] mA = getMouseListeners();
+        //        if(mA.length >= 1) {
+        //            mA[0].mousePressed(e);
+        //        }
+        //    }
+        //});
+        this.MouseDown += (sender, e) => {
+                if ((e.Button == MouseButtons.Left) {
+                    Control bv = this;
+                    Form metricMap = frame;
+                    int x_point=e.X;
+                    int y_point=e.Y;
+                    int xf = metricMap.Location.X+x_point;
+                    int yf = metricMap.Location.Y+y_point;
                     if(isCurrentView){
-                        xf = (int)bv.getLocationOnScreen().getX()+x_point;
-                        yf = (int)bv.getLocationOnScreen().getY()+y_point-26;
+                        var pt = bv.PointToScreen(new Point(x_point, y_point-26));
+                        xf = pt.X;
+                        yf = pt.Y;
                     }
                     TwoIntegerTuple p = new TwoIntegerTuple(x_point, y_point);
                     int currentLow = dataMicroSlider.getValue();
@@ -159,9 +138,9 @@ public class MetricMap extends Visualizer{
                         ClassifierModel classifier = cantordust.getClassifier();
                         //cantordust.cdprint(String.format("class at index %d : %s\n", loc, classifier.classes[classifier.classAtIndex(loc)]));
                     }
-                    int memoryLocation = memLoc.get(loc)+currentLow;
+                    int memoryLocation = memLoc[loc]+currentLow;
                     if(dataRangeSlider != null){
-                        memoryLocation = memoryLocation + cantordust.mainInterface.dataSlider.getValue();
+                        memoryLocation = memoryLocation + cantordust.mainInterface.dataSlider.Value;
                     }
                     long minGhidraAddress = Long.parseLong(cantordust.getCurrentProgram().getMinAddress().toString(false), 16);
                     String currentAddress = Long.toHexString(minGhidraAddress+(long)memoryLocation).toUpperCase();
@@ -195,7 +174,7 @@ public class MetricMap extends Visualizer{
                     popupAddr.hide();
                 }
                 if(e.getButton() == 3){
-                    popupMenu.show(frame, MetricMap.this.getX() + e.getX(), MetricMap.this.getY() + e.getY());
+                    popupMenu.show(frame, MetricMap.this.getX() + e.X(), MetricMap.this.getY() + e.getY());
                 }
             }
         });
@@ -214,7 +193,7 @@ public class MetricMap extends Visualizer{
 
     public void createPopupMenu(JFrame frame){
         popupMenu = new JPopupMenu("Menu");
-        JMenuItem pause = new JMenuItem("Pause");
+        ToolStripMenuItem pause = new ToolStripMenuItem("Pause");
 
         pause.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {    
@@ -222,7 +201,7 @@ public class MetricMap extends Visualizer{
             }
         });
         
-        JMenuItem hilbert = new JMenuItem("Hilbert");
+        ToolStripMenuItem hilbert = new ToolStripMenuItem("Hilbert");
         hilbert.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if(!csource.type.equals("classifierPrediction")) {
@@ -236,43 +215,43 @@ public class MetricMap extends Visualizer{
             }
         });
 
-        JMenuItem linear = new JMenuItem("Linear");
+        ToolStripMenuItem linear = new ToolStripMenuItem("Linear");
         linear.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {   
                 if(!map.isType("linear")) {
                     cantordust.cdprint("clicked linear\n");
-                    double x = Math.pow(getWindowSize(),2);
+                    double x = Math.Pow(getWindowSize(),2);
                     map = new Linear(cantordust, 2, x);
                     draw();
                 } else { cantordust.cdprint("clicked linear\nAlready set\n"); }
             }
         });
 
-        JMenuItem zorder = new JMenuItem("Zorder");
+        ToolStripMenuItem zorder = new ToolStripMenuItem("Zorder");
         zorder.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {   
                 if(!map.isType("zorder")) {
                     cantordust.cdprint("clicked zorder\n");
-                    double x = Math.pow(getWindowSize(),2);
+                    double x = Math.Pow(getWindowSize(),2);
                     map = new Zorder(cantordust, 2, x);
                     draw();
                 } else { cantordust.cdprint("clicked zorder\nAlready set\n"); }
             }
         });
 
-        JMenuItem hcurve = new JMenuItem("HCurve");
+        ToolStripMenuItem hcurve = new ToolStripMenuItem("HCurve");
         hcurve.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {   
                 if(!map.isType("hcurve")) {
                     cantordust.cdprint("clicked hcurve\n");
-                    double x = Math.pow(getWindowSize(),2);
+                    double x = Math.Pow(getWindowSize(),2);
                     map = new HCurve(cantordust, 2, x);
                     draw();
                 } else { cantordust.cdprint("clicked hcurve\nAlready set\n"); }
             }
         });
 
-        JMenuItem _8bpp = new JMenuItem("8bpp");
+        ToolStripMenuItem _8bpp = new ToolStripMenuItem("8bpp");
         _8bpp.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {   
                 if(!csource.isType("8bpp")) {
@@ -283,7 +262,7 @@ public class MetricMap extends Visualizer{
             }
         });
 
-        JMenuItem _16bpp = new JMenuItem("16bpp ARGB1555");
+        ToolStripMenuItem _16bpp = new ToolStripMenuItem("16bpp ARGB1555");
         _16bpp.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {   
                 if(!csource.isType("16bpp ARGB1555")) {
@@ -294,7 +273,7 @@ public class MetricMap extends Visualizer{
             }
         });
 
-        JMenuItem _24bpp = new JMenuItem("24bpp Rgb");
+        ToolStripMenuItem _24bpp = new ToolStripMenuItem("24bpp Rgb");
         _24bpp.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {   
                 if(!csource.isType("24bpp")) {
@@ -305,7 +284,7 @@ public class MetricMap extends Visualizer{
             }
         });
 
-        JMenuItem _32bpp = new JMenuItem("32bpp Rgb");
+        ToolStripMenuItem _32bpp = new ToolStripMenuItem("32bpp Rgb");
         _32bpp.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {   
                 if(!csource.isType("32bpp")) {
@@ -316,7 +295,7 @@ public class MetricMap extends Visualizer{
             }
         });
         
-        JMenuItem _64bpp = new JMenuItem("64bpp Rgb");
+        ToolStripMenuItem _64bpp = new ToolStripMenuItem("64bpp Rgb");
         _64bpp.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {   
                 if(!csource.isType("64bpp")) {
@@ -327,7 +306,7 @@ public class MetricMap extends Visualizer{
             }
         });
 
-        JMenuItem entropy = new JMenuItem("Entropy");
+        ToolStripMenuItem entropy = new ToolStripMenuItem("Entropy");
         entropy.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {   
                 if(!csource.isType("entropy")) {
@@ -338,7 +317,7 @@ public class MetricMap extends Visualizer{
             }
         });
 
-        JMenuItem byteClass = new JMenuItem("Byte Class");
+        ToolStripMenuItem byteClass = new ToolStripMenuItem("Byte Class");
         byteClass.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {   
                 if(!csource.isType("class")) {
@@ -349,7 +328,7 @@ public class MetricMap extends Visualizer{
             }
         });
 
-        JMenuItem gradient = new JMenuItem("Gradient");
+        ToolStripMenuItem gradient = new ToolStripMenuItem("Gradient");
         gradient.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {   
                 if(!csource.isType("gradient")) {
@@ -360,7 +339,7 @@ public class MetricMap extends Visualizer{
             }
         });
 
-        JMenuItem spectrum = new JMenuItem("Spectrum");
+        ToolStripMenuItem spectrum = new ToolStripMenuItem("Spectrum");
         spectrum.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {   
                 if(!csource.isType("spectrum")) {
@@ -371,7 +350,7 @@ public class MetricMap extends Visualizer{
             }
         });
 
-        JMenuItem prediction = new JMenuItem("Classifier prediction");
+        ToolStripMenuItem prediction = new ToolStripMenuItem("Classifier prediction");
         prediction.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if(!csource.isType("classifierPrediction")) {
@@ -383,7 +362,7 @@ public class MetricMap extends Visualizer{
             }
         });
         
-        /*JMenuItem stopClassifier = new JMenuItem("Stop Classifier");
+        /*ToolStripMenuItem stopClassifier = new ToolStripMenuItem("Stop Classifier");
         stopClassifier.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 isClassifier = false;
@@ -392,14 +371,14 @@ public class MetricMap extends Visualizer{
             }
         });*/
 
-        JMenuItem close = new JMenuItem("Close");
+        ToolStripMenuItem close = new ToolStripMenuItem("Close");
         close.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {    
                 cantordust.cdprint("clicked close\n");
             }
         });
 
-        JMenuItem classGen = new JMenuItem("Generate Classifier");
+        ToolStripMenuItem classGen = new ToolStripMenuItem("Generate Classifier");
         classGen.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {    
                 // draw();
@@ -464,7 +443,7 @@ public class MetricMap extends Visualizer{
     }
 
     public void drawMap_square(ColorSource csource/*, String name, prog */) {
-        // prog.set_target(Math.pow(size, 2))
+        // prog.set_target(Math.Pow(size, 2))
         // if(this.map.isType("hilbert")){
         //     cantordust.cdprint("")
         //     this.map = new Hilbert(this.cantordust, 2, (int)(Math.log(getWindowSize())/Math.log(2)));
@@ -563,7 +542,7 @@ public class MetricMap extends Visualizer{
         repaint();
     }
     
-    private JLabel createImageLabel(int[] pixels, int width, int height)
+    private Label createImageLabel(int[] pixels, int width, int height)
     {
         // int change = size_hilbert - (int)((width - size_hilbert)/2);
         // cantordust.cdprint("ch: "+change+"\n");

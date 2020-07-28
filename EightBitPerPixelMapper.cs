@@ -1,6 +1,6 @@
 import java.awt.Color;
 
-public class EightBitPerPixelMapper extends ColorMapper {
+public class EightBitPerPixelMapper : ColorMapper {
     EightBitPerPixelMapper(Cantordust cantordust) {
         super(cantordust);
     }

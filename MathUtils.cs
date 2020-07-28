@@ -1,13 +1,15 @@
+using System;
+
 public class MathUtils {
-    public static int clamp(int value, int min, int max) {return Math.min(Math.max(min, value), max);}
+    public static int clamp(int value, int min, int max) {return Math.Min(Math.Max(min, value), max);}
 
     public static double fastPow(double x, int n) {
         if(n == 0) return 1;
         if(n == 1) return x;
 
-        if(n == Integer.MIN_VALUE) {throw new IllegalArgumentException("n");}
+        if(n == int.MinValue) {throw new ArgumentException(nameof(n));}
 
-        boolean invert = false;
+        bool invert = false;
         if(n < 0) {
             n = -n;
             invert = true;
@@ -32,9 +34,9 @@ public class MathUtils {
         if(n == 0) return new ExponentialNotation(1, 0); // 1
         if(n == 1) return x;
 
-        if(n == Integer.MIN_VALUE) {throw new IllegalArgumentException("n");}
+        if(n == int.MinValue) {throw new ArgumentException(nameof(n));}
 
-        boolean invert = false;
+        bool invert = false;
         if(n < 0) {
             n = -n;
             invert = true;

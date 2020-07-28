@@ -1,97 +1,93 @@
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.awt.geom.Rectangle2D;
-import java.util.HashMap;
-import java.util.Map;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
-public class OneTupleVisualizer extends Visualizer {
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Linq;
+using System.Windows.Forms;
+
+public class OneTupleVisualizer : Visualizer {
     private double blockHeight;
     private int groupLines = 16;
-    private Popup popup;
-    private Color color = Color.GREEN;
+    private ContextMenuStrip popup;
+    private Color color = Color.Green;
 
-    public OneTupleVisualizer(int windowSize, Cantordust cantordust, JFrame frame) {
-        super(windowSize, cantordust);
+    public OneTupleVisualizer(int windowSize, Cantordust cantordust, Form frame) :
+        base(windowSize, cantordust) {
         blockHeight = blockWidth;
         cantordust.cdprint("about to execute createPopupMenu\n");
         createPopupMenu(frame);
     }
 
-    public void createPopupMenu(JFrame frame){
-        JPopupMenu popup = new JPopupMenu("test1");
+    public void createPopupMenu(Form frame){
+        ContextMenuStrip popup = new ContextMenuStrip { Name="test1"};
         // add color options
-        HashMap<String, Color> colorButtons = new HashMap<String, Color>() {{
-            put("Green", Color.GREEN);
-            put("Red", Color.RED);
-            put("Blue", Color.BLUE);
-            put("Magenta", Color.MAGENTA);
-            put("Cyan", Color.CYAN);
-            put("Yellow", Color.YELLOW);
-            put("White", Color.WHITE);
-            put("Orange", Color.ORANGE);
-            put("Pink", Color.PINK);
-        }};
+        Dictionary<string, Color> colorButtons = new Dictionary<string, Color> {
+            { "Green", Color.Green },
+            { "Red", Color.Red },
+            { "Blue", Color.Blue },
+            { "Magenta", Color.Magenta },
+            { "Cyan", Color.Cyan },
+            { "Yellow", Color.Yellow },
+            { "White", Color.White },
+            { "Orange", Color.Orange },
+            { "Pink", Color.Pink },
+        };
 
-        JMenu colors = new JMenu("Colors");
-        for (Map.Entry<String, Color> entry : colorButtons.entrySet()) {
-            String name = entry.getKey();
-            Color c = entry.getValue();
-            JMenuItem colorMenuItem = new JMenuItem(name);
-            colorMenuItem.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {    
-                    color = c;
-                    repaint();
-                }
-            });
-            colors.add(colorMenuItem);
+        MenuStrip colors = new MenuStrip() { Name = "Colors" };
+        foreach (var entry in colorButtons.ToList()) {
+            string name = entry.Key;
+            Color c = entry.Value;
+            var colorMenuItem = new ToolStripMenuItem { Text = name };
+            colorMenuItem.Click += delegate
+            {
+                color = c;
+                Invalidate();
+            };
+            colors.Items.Add(colorMenuItem);
         }
         // add line options
-        JMenu lines = new JMenu("Lines");
+        MenuStrip lines = new MenuStrip { Text = "Lines" };
         for (int i=0;i<9;i++) {
-            int j = (int)Math.pow(2,i);
-            JMenuItem colorMenuItem = new JMenuItem(Integer.toString(j));
-            colorMenuItem.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {    
-                    groupLines = j;
-                    repaint();
-                }
-            });
-            lines.add(colorMenuItem);
+            int j = (int)Math.Pow(2,i);
+            var colorMenuItem = new ToolStripMenuItem(j.ToString());
+            colorMenuItem.Click += delegate
+            {
+                groupLines = j;
+                Invalidate();
+            };
+            lines.Items.Add(colorMenuItem);
         }
 
-        popup.add(colors);
-        popup.add(lines);
-        
-        frame.addMouseListener(new MouseAdapter() {  
-            public void mouseReleased(MouseEvent e) {  
-                if(e.getButton() == 3){
-                    popup.show(frame , e.getX(), e.getY());
-                }
-            }                 
-        }); 
+        popup.Items.Add(colors);
+        popup.Items.Add(lines);
 
-        this.add(popup);
+        frame.MouseUp += (sender, e) =>
+        {
+            if (e.Button == MouseButtons.Right)
+            {
+                popup.Show(frame, e.X, e.Y);
+            }
+        };
+        this.ContextMenuStrip = popup;
         //frame.setVisible(false);
     }
 
-    public void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        dataMicroSlider.setMinimum(dataMacroSlider.getValue());
-        dataMicroSlider.setMaximum(dataMacroSlider.getUpperValue());
+    protected override void OnPaint(PaintEventArgs e)
+    {
+        base.OnPaint(e);
+        dataMicroSlider.Minimum = dataMacroSlider.getValue();
+        dataMicroSlider.Maximum = dataMacroSlider.getUpperValue();
         int low = dataMicroSlider.getValue();
         int high = dataMicroSlider.getUpperValue();
-        gradientPlot((Graphics2D)g, low, high);
+        gradientPlot(e.Graphics, low, high);
     }
 
-    private void gradientPlot(Graphics2D g, int low, int high) {
-        blockWidth = getWidth() / (double)0xff;
-        blockHeight = getHeight() / (double)0xff;
+    private void gradientPlot(Graphics g, int low, int high) {
+        blockWidth = Width / (double)0xff;
+        blockHeight = Height / (double)0xff;
         byte[] data = mainInterface.getData();
         byte[] byteArray = new byte[256*256];
-        Integer freq;
+        int freq;
 
         for(int i = 0; i < 256; i++){
             for(int j = 0; j < 256 * groupLines; j++){
@@ -113,22 +109,23 @@ public class OneTupleVisualizer extends Visualizer {
         double y = 0;
         for(int i = 0; i < 256*256; i++) {
             // g.setColor(new Color(0, (int)byteArray[i] & 0xFF, 0));
-            int red_rgb = color.getRed();
-            int green_rgb = color.getGreen();
-            int blue_rgb = color.getBlue();
+            int red_rgb = color.R;
+            int green_rgb = color.G;
+            int blue_rgb = color.B;
             int diff = 256 - ((int)byteArray[i] & 0xFF);
 
             red_rgb = (red_rgb - diff) >= 0 ? (red_rgb-diff) : 0;
             green_rgb = (green_rgb - diff) >= 0 ? (green_rgb-diff) : 0;
             blue_rgb = (blue_rgb - diff) >= 0 ? (blue_rgb-diff) : 0;
                 
-            g.setColor(new Color(red_rgb, green_rgb, blue_rgb));
-            g.fill(new Rectangle2D.Double(x*blockWidth, y*blockHeight, blockWidth, blockHeight));
+            var brush = new SolidBrush(Color.FromArgb(red_rgb, green_rgb, blue_rgb));
+            g.FillRectangle(brush, x*blockWidth, y*blockHeight, blockWidth, blockHeight);
             x++;
             if(x == 256){
                 x = 0;
                 y++;
             }
+            brush.Dispose();
         }
     }
 

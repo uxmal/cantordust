@@ -1,25 +1,28 @@
-import java.util.HashMap;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
 public class NGramModel {
     ExponentialNotation MINIMUM_FREQUENCY_MULTIPLIER =  new ExponentialNotation(1, -20);
 
     private int n;
     private int modelEntries;
-    private HashMap<VectorN, Double> model = new HashMap<>();
+    private Dictionary<VectorN, double> model = new Dictionary<VectorN, double>();
 
     public NGramModel(byte[] data, int startIndex, int length, int n) {
         GenerateModel(data, startIndex, length, n);
     }
 
     public NGramModel(byte[] data, int n) {
-        GenerateModel(data, 0, data.length, n );
+        GenerateModel(data, 0, data.Length, n );
     }
 
     private void recordInstance(VectorN v) {
-        if(model.containsKey(v)) {
-            model.put(v, model.get(v) + 1);
+        if(model.ContainsKey(v)) {
+            model[v] = model[v] + 1;
         } else {
-            model.put(v, 1.0);
+            model.Add(v, 1.0);
         }
     }
 
@@ -33,31 +36,31 @@ public class NGramModel {
                 for(int k = 0; k < n; k++) {
                     v.setAt(k, data[i+k]);
                 }
-                if(model.containsKey(v)) {
-                    model.put(v, model.get(v) + 1);
+                if(model.ContainsKey(v)) {
+                    model[v] = model[v] + 1;
                 } else {
-                    model.put(v, 1.0);
+                    model.Add(v, 1.0);
                 }
             }
         }
 
         // calculate probabilities
-        modelEntries = data.length - n + 1;
-        for(VectorN entry : model.keySet()) {
-            model.put(entry, model.get(entry) / (double)modelEntries);
+        modelEntries = data.Length - n + 1;
+        foreach (VectorN entry in model.Keys.ToList()) {
+            model[entry] = model[entry] / (double)modelEntries;
         }
     }
 
     public ExponentialNotation EvaluateClassification(NGramModel templateModel) {
         // ensure dimensionality is consistent
-        if(n != templateModel.n) {throw new IllegalArgumentException("inconsistent dimensions");}
+        if(n != templateModel.n) {throw new ArgumentException("inconsistent dimensions");}
 
         ExponentialNotation p = new ExponentialNotation(1);
 
-        for(VectorN v : model.keySet()) {
-            int k = (int)(model.get(v) * modelEntries + 0.5);
-            if(templateModel.model.containsKey(v)) {
-                double pClass = templateModel.model.get(v);
+        foreach (VectorN v in model.Keys.ToList()) {
+            int k = (int)(model[v] * modelEntries + 0.5);
+            if(templateModel.model.ContainsKey(v)) {
+                double pClass = templateModel.model[v];
                 p = p.multiply(MathUtils.fastPow(new ExponentialNotation(pClass), k));
 
             } else {
@@ -68,13 +71,13 @@ public class NGramModel {
     }
 
     // mostly for debug purposes
-    @Override
-    public String toString() {
+    public override string ToString() {
         StringBuilder builder = new StringBuilder();
-        builder.append(String.format("%d entries: \n", modelEntries));
-        for(VectorN key : model.keySet()) {
-            builder.append(String.format("\t%s : %d (%f)\n", key.toString(), (int)(model.get(key)*modelEntries), model.get(key)));
+        builder.AppendFormat("{0} entries: ", modelEntries);
+        builder.AppendLine();
+        foreach (VectorN key in model.Keys) {
+            builder.AppendFormat("\t{0} : {1} ({2})\n", key.ToString(), (int)(model[key]*modelEntries), model[key]);
         }
-        return builder.toString();
+        return builder.ToString();
     }
 }

@@ -1,11 +1,11 @@
 //scurve __init__
-import java.lang.Error;
+using System;
 
 public class Scurve{
     protected Cantordust cantordust;
     protected int size = 512;
     protected byte[] data;
-    protected String type;
+    protected string type;
     // private HashMap<String,Scurve> curveMap = new HashMap<String, Scurve>();
     public Scurve(Cantordust cantordust){
         this.cantordust = cantordust;
@@ -17,31 +17,31 @@ public class Scurve{
         // curveMap.put("gray", new GrayCurve());
         // curveMap.put("hilbert", new Hilbert(cantordust));
     }
-    public void setWidth(int width){}
-    public void setHeight(int height){}
-    public int getWidth(){return this.size;}
-    public int getHeight(){return this.size;}
-    public boolean isType(String t){
+    public virtual void setWidth(int width){}
+    public virtual void setHeight(int height){}
+    public virtual int getWidth(){return this.size;}
+    public virtual int getHeight(){return this.size;}
+    public bool isType(string t){
         if(this.type == t){
             return true;
         } else { return false; }
     }
-    public Scurve fromSize(String curve, int dimension, int size){
+    public virtual Scurve fromSize(string curve, int dimension, int size){
         return new Hilbert(this.cantordust, dimension, size);
     }
-    public int getLength(){
+    public virtual int getLength(){
         return 0;
     }
-    public Tuple point(int idx){
+    public virtual Tuple point(int idx){
         if(idx >= getLength()){
-            throw new Error("Index Error");
+            throw new ArgumentException("Index Error");
         }
         return new TwoIntegerTuple(0, 0);
     }
-    public int index(TwoIntegerTuple p){
+    public virtual int index(TwoIntegerTuple p){
         return 0;
     }
-    public TwoIntegerTuple dimensions(){
+    public virtual TwoIntegerTuple dimensions(){
         return new TwoIntegerTuple(0, 0);
     }
 }

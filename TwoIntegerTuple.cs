@@ -1,5 +1,5 @@
 import java.lang.Error;
-public class TwoIntegerTuple extends Tuple{
+public class TwoIntegerTuple : Tuple{
     Integer x;
     Integer y;
     public TwoIntegerTuple(){
@@ -7,7 +7,7 @@ public class TwoIntegerTuple extends Tuple{
         this.x = null;
         this.y = null;
     }
-    public TwoIntegerTuple(Integer x, Integer y) {
+    public TwoIntegerTuple(int x, int y) {
         super(x);
         this.x = x; 
         this.y = y;}

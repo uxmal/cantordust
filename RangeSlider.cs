@@ -1,4 +1,5 @@
-import javax.swing.JSlider;
+using System.Windows.Forms;
+
 
 /**
  * An extension of JSlider to select a range of values using two thumb controls.
@@ -9,7 +10,7 @@ import javax.swing.JSlider;
  * supports an inner range defined by a value and an extent.  The upper value
  * returned by RangeSlider is simply the lower value plus the extent.</p>
  */
-public class RangeSlider extends JSlider {
+public class RangeSlider : ScrollBar {
 
     /**
      * Constructs a RangeSlider with default minimum and maximum values of 0

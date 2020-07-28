@@ -1,14 +1,13 @@
-import java.awt.Color;
+using System.Drawing;
 
-public class BitMapColorMapper extends ColorMapper {
+public class BitMapColorMapper : ColorMapper {
 
-    public BitMapColorMapper(Cantordust cantordust) {
-    	super(cantordust);
+    public BitMapColorMapper(Cantordust cantordust) : base(cantordust) {
         data = cantordust.getData();
     }
 
-    public Color colorAtIndex(int index) {
+    public override Color colorAtIndex(int index) {
         int unsignedByte = data[index] & 0xFF;
-        return new Color(0, unsignedByte, 0);
+        return Color.FromArgb(0, unsignedByte, 0);
     }
 }

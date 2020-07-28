@@ -1,51 +1,49 @@
-import java.util.HashMap;
+using System;
+using System.Collections.Generic;
+
 // import java.util.ArrayList;
 
 // HCurve
-public class HCurve extends Scurve{
+public class HCurve : Scurve{
     protected int dimension;
     protected int size;
     protected Utils utils;
-    public HashMap<TwoIntegerTuple, Integer> indexes;
-    public HCurve(Cantordust cantordust){
-        super(cantordust);
+    public Dictionary<TwoIntegerTuple, int> indexes;
+    public HCurve(Cantordust cantordust) : base(cantordust) {
         this.type = "hcurve";
     }
-    public HCurve(Cantordust cantordust, int dimension, double size) {
-        super(cantordust);
+    public HCurve(Cantordust cantordust, int dimension, double size) : base(cantordust) {
         this.type = "hcurve";
         this.utils = new Utils(this.cantordust);
-        this.indexes = new HashMap<TwoIntegerTuple, Integer>();
+        this.indexes = new Dictionary<TwoIntegerTuple, int>();
         this.cantordust.cdprint("checking HCurve size.\n");
-        double x = Math.ceil(Math.pow(size, 1/(double)dimension));
-        double y = Math.pow(x, dimension);
-        if(!(Math.pow(x, dimension) == size)){
-            throw new Error("Size does not fit a square HCurve curve");
+        double x = Math.Ceiling(Math.Pow(size, 1/(double)dimension));
+        double y = Math.Pow(x, dimension);
+        if(!(Math.Pow(x, dimension) == size)){
+            throw new ArgumentException("Size does not fit a square HCurve curve");
         }
         if(dimension != 2){
-            throw new Error("Invalid dimension - we can only draw the H-curve in 2 dimensions.");
+            throw new ArgumentException("Invalid dimension - we can only draw the H-curve in 2 dimensions.");
         }
-        double c = Math.log(x)/Math.log(2);
+        double c = Math.Log(x)/Math.Log(2);
         if(!(c == (int)c)){
-            throw new Error("Invalid size - has to be a power of 2.");
+            throw new ArgumentException("Invalid size - has to be a power of 2.");
         }
         this.cantordust.cdprint("HCurve check passed\n");
         this.dimension = dimension;
         this.size = (int)x;
     }
-    @Override
-    public int getLength(){
-        return (int)Math.pow(this.size, this.dimension);
+    public override int getLength(){
+        return (int)Math.Pow(this.size, this.dimension);
     }
-    @Override
-    public TwoIntegerTuple dimensions(){
+    public override TwoIntegerTuple dimensions(){
         /*
             Size of this curve in each dimension.
         */
         return new TwoIntegerTuple(this.size, this.size);
     }
     public int cor(int d, int i, int n){
-        int tsize = (int)(Math.pow(n, this.dimension)/2);
+        int tsize = (int)(Math.Pow(n, this.dimension)/2);
         if(i<0){
             return 0;
         } else if(i<d+1){
@@ -68,7 +66,7 @@ public class HCurve extends Scurve{
     }
     public int xcor(int i, int n){
         // Size of this sub-triangle
-        int tsize = (int)(Math.pow(n, this.dimension)/2);
+        int tsize = (int)(Math.Pow(n, this.dimension)/2);
         if(i<0){
             return 0;
         } else if(i>=tsize){
@@ -84,7 +82,7 @@ public class HCurve extends Scurve{
         return 0;
     }
     public int ycor(int i, int n){
-        int tsize = (int)(Math.pow(n, this.dimension)/2);
+        int tsize = (int)(Math.Pow(n, this.dimension)/2);
         if(i<2){
             return i;
         } else if(i>=tsize){
@@ -98,16 +96,14 @@ public class HCurve extends Scurve{
         }
         return 0;
     }
-    @Override
-    public int index(TwoIntegerTuple p){
-        if(!this.indexes.containsKey(p)){return 42;}
-        int idx = this.indexes.get(p);
+    public override int index(TwoIntegerTuple p){
+        if(!this.indexes.ContainsKey(p)){return 42;}
+        int idx = this.indexes[p];
         return idx;
     }
-    @Override
-    public TwoIntegerTuple point(int idx){
+    public override Tuple point(int idx){
         TwoIntegerTuple p = new TwoIntegerTuple(this.cor(0, idx, this.size), ycor(idx, this.size));
-        this.indexes.put(p, idx);
+        this.indexes[p] = idx;
         return p;
     }
 }

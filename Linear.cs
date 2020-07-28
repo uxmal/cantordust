@@ -1,74 +1,67 @@
-import java.util.ArrayList;
 
 // Linear
-public class Linear extends Scurve{
+using System;
+using System.Collections.Generic;
+
+public class Linear : Scurve{
     protected int dimension;
     protected int width;
     protected int height;
     protected int size;
-    public Linear(Cantordust cantordust){
-        super(cantordust);
+    public Linear(Cantordust cantordust) : base(cantordust) {
         this.type = "linear";
     }
-    public Linear(Cantordust cantordust, int dimension, double size) {
-        super(cantordust);
+    public Linear(Cantordust cantordust, int dimension, double size) : base(cantordust) {
         this.type = "linear";
         this.cantordust.cdprint("checking zig zag size.\n");
-        double x = Math.ceil(Math.pow(size, 1/(double)dimension));
-        double y = Math.pow(x, dimension);
-        if(!(Math.pow(x, dimension) == size)){
-            throw new Error("Size does not fit a square Linear curve");
+        double x = Math.Ceiling(Math.Pow(size, 1/(double)dimension));
+        double y = Math.Pow(x, dimension);
+        if(!(Math.Pow(x, dimension) == size)){
+            throw new ArgumentException("Size does not fit a square Linear curve");
         }
         this.dimension = dimension;
         this.size = (int)x;
         this.width = this.size;
         this.height = this.size;
     }
-    @Override
-    public void setWidth(int width){
+    public override void setWidth(int width){
         this.width = width;
     }
-    @Override
-    public void setHeight(int height){
+    public override void setHeight(int height){
         this.height = height;
     }
-    @Override
-    public int getWidth(){
+    public override int getWidth(){
         return this.width;
     }
-    @Override
-    public int getHeight(){
+    public override int getHeight(){
         return this.height;
     }
-    @Override
-    public int getLength(){
-        return (int)Math.pow(this.size, this.dimension);
+    public override int getLength(){
+        return (int)Math.Pow(this.size, this.dimension);
     }
-    @Override
-    public TwoIntegerTuple dimensions(){
+    public override TwoIntegerTuple dimensions(){
         /*
             Size of this curve in each dimension.
         */
         return new TwoIntegerTuple(this.width, this.height);
     }
-    @Override
-    public int index(TwoIntegerTuple p){
+    public override int index(TwoIntegerTuple p){
         int idx = 0;
-        boolean flip = false;
+        bool flip = false;
         int fi;
-        ArrayList<Integer> arrlist = new ArrayList<Integer>(2);
+        List<int> arrlist = new List<int>(2);
         p.reverse();
-        arrlist.add(p.get(0));
-        arrlist.add(p.get(1));
+        arrlist.Add(p.get(0));
+        arrlist.Add(p.get(1));
         for(int power=0;power<2;power++){
-            int i = arrlist.get(power);
+            int i = arrlist[power];
             power = this.dimension-power-1;
             if(flip){
                 fi = this.size-i-1;
             } else{
                 fi = i;
             }
-            int v = fi * (int)Math.pow(this.size, power);
+            int v = fi * (int)Math.Pow(this.size, power);
             idx += v;
             if(i%2==1){
                 flip = !flip;
@@ -76,26 +69,25 @@ public class Linear extends Scurve{
         }
         return idx;
     }
-    @Override
-    public TwoIntegerTuple point(int idx){
+    public override Tuple point(int idx){
         // cantordust.cdprint("\n----\n");
         // TwoIntegerTuple p = new TwoIntegerTuple();
-        ArrayList<Integer> arrlist = new ArrayList<Integer>(2);
-        boolean flip = false;
+        List<int> arrlist = new List<int>(2);
+        bool flip = false;
         for(int i=this.dimension-1;i>-1;i-=1){
-            int v = idx/(int)(Math.pow(this.size, i));
+            int v = idx/(int)(Math.Pow(this.size, i));
             if(i>0){
-                idx = idx - (int)(Math.pow(this.size, i)*v);
+                idx = idx - (int)(Math.Pow(this.size, i)*v);
             }
             if(flip){
                 v = this.size-1-v;
             }
-            arrlist.add((int)v);
+            arrlist.Add((int)v);
             if(v%2==1){
                 flip = !flip;
             }
         }
-        TwoIntegerTuple p = new TwoIntegerTuple(arrlist.get(0), arrlist.get(1));
+        TwoIntegerTuple p = new TwoIntegerTuple(arrlist[0], arrlist[1]);
         p.reverse();
         // cantordust.cdprint("p: "+p.get(0)+", "+p.get(1)+"\n");
         return p;

@@ -16,7 +16,7 @@ import javax.swing.JSlider;
  * UI delegate for the BitMapSlider component. BitMapSliderUI paints two thumbs,
  * one for the lower value and one for the upper value.
  */
-class BitMapSliderUI extends RangeSliderUI {
+class BitMapSliderUI : RangeSliderUI {
     private BufferedImage img;
 
     public BitMapSliderUI(BitMapSlider b) {

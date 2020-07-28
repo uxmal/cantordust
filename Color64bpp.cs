@@ -1,5 +1,5 @@
 import java.awt.Color;
-public class Color64bpp extends ColorSource { /* see binvis - ColorHilbert class */
+public class Color64bpp : ColorSource { /* see binvis - ColorHilbert class */
     Hilbert map;
     double step;
     public Color64bpp(Cantordust cantordust, byte[] data) {

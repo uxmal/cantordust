@@ -1,35 +1,37 @@
-import java.util.HashMap;
-import java.util.TreeSet;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
-@SuppressWarnings("unchecked")
+
+//@SuppressWarnings("unchecked")
 public abstract class ColorSource {
     protected byte[] data;
     protected Cantordust cantordust;
-    protected HashMap<Byte, Integer> symbol_map;
-    protected String type;
+    protected Dictionary<byte, int> symbol_map;
+    protected string type;
 
-    ColorSource(Cantordust cantordust, byte[] data/* , block */) {
+    public ColorSource(Cantordust cantordust, byte[] data/* , block */) {
         this.cantordust = cantordust;
         this.data = data;
-        this.symbol_map = new HashMap<Byte, Integer>();
-        TreeSet sorted_uniques = new TreeSet();
-        for (byte b : data) {
-            sorted_uniques.add(b);
+        this.symbol_map = new Dictionary<byte, int>();
+        SortedSet<byte> sorted_uniques = new SortedSet<byte>();
+        foreach (byte b in data) {
+            sorted_uniques.Add(b);
         }
-        Object[] listed_uniques = sorted_uniques.toArray();
+        byte[] listed_uniques = sorted_uniques.ToArray();
         /*
             we are ignoring unsafe casting to create the symbol_map
             the symbol_map is an array of every unique byte within the loaded program
             mapped in a HashMap to the unsigned byte value.
         */
-        for (int i = 0; i < listed_uniques.length; i++) {
-            int var = (int)((Byte)listed_uniques[i] & 0xff);
-            this.symbol_map.put((Byte)listed_uniques[i], var);
-            cantordust.cdprint(String.format("b: %02x : "+var+"\n", (Byte)listed_uniques[i]));
+        for (int i = 0; i < listed_uniques.Length; i++) {
+            int var = (int)listed_uniques[i] & 0xff;
+            this.symbol_map[listed_uniques[i]] = var;
+            cantordust.cdprint(string.Format("b: {0:x2} : "+var+Environment.NewLine, listed_uniques[i]));
         }
     }
 
-    public boolean isType(String t){
+    public bool isType(String t){
         if(this.type == t){
             return true;
         } else { return false; }
@@ -40,7 +42,7 @@ public abstract class ColorSource {
     }
 
     public int getLength() {
-        return data.length;
+        return data.Length;
     }
 
     public Rgb point(int x) {

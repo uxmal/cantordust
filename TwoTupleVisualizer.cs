@@ -1,31 +1,23 @@
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
-public class TwoTupleVisualizer extends Visualizer {
-    private BufferedImage img;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.Threading;
+using System.Windows.Forms;
+
+public class TwoTupleVisualizer : Visualizer {
+    private Bitmap img;
     private int divisions = 20;
-    private ArrayList<HashMap<TwoByteTuple, Integer>> cachedFreqMaps;
+    private List<Dictionary<TwoByteTuple, int>> cachedFreqMaps;
     HashSet<TwoByteTuple> existingTuples;
-    private String colorMode = "g";
-    private Boolean gradientMode = true;
+    private string colorMode = "g";
+    private bool gradientMode = true;
     private int cycles = 0;
 
-    public TwoTupleVisualizer(int windowSize, Cantordust cantordust, JFrame frame) {
-        super(windowSize, cantordust);
+    public TwoTupleVisualizer(int windowSize, Cantordust cantordust, Form frame) :
+        base(windowSize, cantordust)
+    {
         this.img = null;
         initializeCaches();
         constructImageAsync();
@@ -34,8 +26,8 @@ public class TwoTupleVisualizer extends Visualizer {
     }
 
     // Special constructor for initialization of plugin
-    public TwoTupleVisualizer(int windowSize, Cantordust cantordust, MainInterface mainInterface, JFrame frame) {
-        super(windowSize, cantordust, mainInterface);
+    public TwoTupleVisualizer(int windowSize, Cantordust cantordust, MainInterface mainInterface, Form frame) :
+        base(windowSize, cantordust, mainInterface) {
         this.img = null;
         initializeCaches();
         constructImageAsync();
@@ -43,72 +35,72 @@ public class TwoTupleVisualizer extends Visualizer {
         createPopupMenu(frame);
     }
 
-    public void paintComponent(Graphics g) {
-        super.paintComponent(g);
+    protected override void OnPaint(PaintEventArgs e)
+    {
+        base.OnPaint(e);
 
-        Rectangle window = getVisibleRect();
+        Rectangle window = ClientRectangle;
 
         if (img != null)
-            g.drawImage(img, 0, 0, (int)window.getWidth(), (int)window.getHeight(), this);
+            e.Graphics.DrawImage(img, 0, 0, (int)window.Width, (int)window.Height);
     }
 
     public void constructImageAsync() {
-        new Thread(() -> {
+        new Thread(() => {
             //initializeCaches();
             dataMicroSlider.setMinimum(dataMacroSlider.getValue());
             dataMicroSlider.setMaximum(dataMacroSlider.getUpperValue());
             int low = dataMicroSlider.getValue();
             int high = dataMicroSlider.getUpperValue();
 
-            this.img = new BufferedImage(256, 256, BufferedImage.TYPE_INT_ARGB);
+        this.img = new Bitmap(256, 256, PixelFormat.Format32bppArgb);
 
-            gradientPlot(img.createGraphics(), low, high);
-            repaint();
+            gradientPlot(Graphics.FromImage(img), low, high);
+            Invalidate();
         }).start();
     }
 
-    private HashMap<TwoByteTuple, Integer> countedByteFrequencies(int low, int high) {
+    private Dictionary<TwoByteTuple, int> countedByteFrequencies(int low, int high) {
         // data needs fixed for large file sizes
         byte[] data = cantordust.mainInterface.getData();
-        HashMap<TwoByteTuple, Integer> tuples = new HashMap<>();
+        Dictionary<TwoByteTuple, int> tuples = new Dictionary<TwoByteTuple, int>();
         for(int tupleIdx=low; tupleIdx < high-1; tupleIdx++) {
             TwoByteTuple tuple = new TwoByteTuple(data[tupleIdx], data[tupleIdx+1]);
-            Integer freq = tuples.get(tuple);
-            if(freq != null) {
-                existingTuples.add(tuple);
-                tuples.put(tuple, freq + 1);
+            if(tuples.TryGetValue(tuple, out int freq)) {
+                existingTuples.Add(tuple);
+                tuples[tuple] = freq + 1;
             } else {
-                tuples.put(tuple,  1);
+                tuples.Add(tuple,  1);
             }
         }
         return tuples;
     }
 
     private void initializeCaches() {
-        cachedFreqMaps = new ArrayList<HashMap<TwoByteTuple, Integer>>();
+        cachedFreqMaps = new List<Dictionary<TwoByteTuple, int>>();
         existingTuples = new HashSet<TwoByteTuple>();
         // data needs fixed for large file sizes
         byte[] data = cantordust.mainInterface.getData();
-        int cachedSize = data.length / divisions;
+        int cachedSize = data.Length / divisions;
         for(int div = 0; div < divisions - 1; div++) {
-            cachedFreqMaps.add(countedByteFrequencies(div*cachedSize, (div+1)*cachedSize));
+            cachedFreqMaps.Add(countedByteFrequencies(div*cachedSize, (div+1)*cachedSize));
         }
-        cachedFreqMaps.add(countedByteFrequencies((divisions-1)*cachedSize, data.length));
+        cachedFreqMaps.Add(countedByteFrequencies((divisions-1)*cachedSize, data.Length));
     }
 
-    private void gradientPlot(Graphics2D g, int low, int high) {
+    private void gradientPlot(Graphics g, int low, int high) {
         cycles += 1;
         // data needs fixed for large file sizes
-        int cachedSize = cantordust.mainInterface.getData().length / divisions;
-        HashMap<TwoByteTuple, Integer> totalFreqs = new HashMap<>();
-        HashMap<TwoByteTuple, Integer> leftStraggler = null;
-        HashMap<TwoByteTuple, Integer> rightStraggler = null;
+        int cachedSize = cantordust.mainInterface.getData().Length / divisions;
+        Dictionary<TwoByteTuple, int> totalFreqs = new Dictionary<TwoByteTuple, int>();
+        Dictionary<TwoByteTuple, int> leftStraggler = null;
+        Dictionary<TwoByteTuple, int> rightStraggler = null;
         int firstCacheBlockStart = nextBlock(low, cachedSize);
         int lastCacheBlockEnd = lastBlock(high, cachedSize);
         if(firstCacheBlockStart != low) {
             leftStraggler = countedByteFrequencies(low, firstCacheBlockStart-1);
-            for(TwoByteTuple tuple: leftStraggler.keySet()) {
-                if(totalFreqs.containsKey(tuple)) {
+            foreach (TwoByteTuple tuple in leftStraggler.Keys) {
+                if(totalFreqs.ContainsKey(tuple)) {
                     totalFreqs.put(tuple, leftStraggler.get(tuple) + totalFreqs.get(tuple));
                 } else {
                     totalFreqs.put(tuple, leftStraggler.get(tuple));
@@ -121,24 +113,24 @@ public class TwoTupleVisualizer extends Visualizer {
 
         int colorStep = 5;
         int min = 0;
-        for(TwoByteTuple twoTuple: totalFreqs.keySet()) {
-            int freq = totalFreqs.get(twoTuple);
+        foreach (TwoByteTuple twoTuple in totalFreqs.Keys) {
+            int freq = totalFreqs[twoTuple];
             //g.setColor(new Color(0, min + (freq*colorStep > 255 - min ? 255 - min : freq*colorStep), 0));
-            g.setColor(getColor(freq, colorMode));
+            var br = new SolidBrush(getColor(freq, colorMode));
             //int colorVal = min + (freq*colorStep > 255 - min ? 255 - min : freq*colorStep);
             //g.setColor(new Color(colorVal, colorVal, colorVal));
             int x = twoTuple.x & 0xff;
             int y = twoTuple.y & 0xff;
             // g.fill(new Rectangle2D.Double(x*blockWidth, y*blockWidth, blockWidth, blockWidth));
-            g.fill(new Rectangle2D.Double(y, x, 1, 1));
-
+            g.FillRectangle(br, y, x, 1, 1);
+            br.Dispose();
         }
-        g.dispose();
+        g.Dispose();
     }
 
-    private void mergeFreqCounts(HashMap<TwoByteTuple, Integer> sender, HashMap<TwoByteTuple, Integer> reciever) {
-        for(TwoByteTuple tuple: sender.keySet()) {
-            reciever.put(tuple, sender.get(tuple) + (reciever.containsKey(tuple) ? reciever.get(tuple) : 0));
+    private void mergeFreqCounts(Dictionary<TwoByteTuple, int> sender, Dictionary<TwoByteTuple, int> reciever) {
+        foreach (TwoByteTuple tuple in sender.Keys) {
+            reciever[tuple] = (sender[tuple] + (reciever.ContainsKey(tuple) ? reciever[tuple] : 0));
         }
     }
 
@@ -173,20 +165,14 @@ public class TwoTupleVisualizer extends Visualizer {
     }
 
     private void addChangeListeners() {
-        dataMacroSlider.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                if(!dataMacroSlider.getValueIsAdjusting()) {
-                    constructImageAsync();
-                }
-            }
-        });
-        dataMicroSlider.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                if(!dataMicroSlider.getValueIsAdjusting() && !dataMacroSlider.getValueIsAdjusting()) {
-                    constructImageAsync();
-                }
-            }
-        });
+        dataMacroSlider.ValueChanged += delegate
+        {
+            constructImageAsync();
+        };
+        dataMicroSlider.ValueChanged += delegate
+        {
+            constructImageAsync();
+        };
     }
 
     private Color getColor(int freq, String rgbPosition) {

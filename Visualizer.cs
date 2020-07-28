@@ -1,19 +1,13 @@
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
+using System.Drawing;
+using System.Windows.Forms;
 
-import java.awt.Color;
-import java.awt.Graphics;
-
-import javax.swing.JPanel;
-import javax.swing.JSlider;
-
-public abstract class Visualizer extends JPanel {
+public abstract class Visualizer : UserControl {
     protected MainInterface mainInterface;
     protected Cantordust cantordust;
-    protected double blockWidth;
+    protected float blockWidth;
     protected RangeSlider dataMacroSlider;
     protected RangeSlider dataMicroSlider;
-    protected JSlider dataRangeSlider;
+    protected ScrollBar dataRangeSlider;
     protected ColorMapper colorMapper;
 
     public Visualizer(int windowSize, Cantordust cantordust) {
@@ -22,29 +16,19 @@ public abstract class Visualizer extends JPanel {
         dataMacroSlider = mainInterface.macroSlider;
         dataMicroSlider = mainInterface.microSlider;
         dataRangeSlider = mainInterface.dataSlider;
-        setBackground(Color.black);
-        dataMacroSlider.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                if(!dataMacroSlider.getValueIsAdjusting()) {
-                    repaint();
-                }
-            }
-        });
-        dataMicroSlider.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                if(!dataMicroSlider.getValueIsAdjusting()) {
-                    repaint();
-                }
-            }
-        });
-        if(dataRangeSlider != null){
-            dataRangeSlider.addChangeListener(new ChangeListener() {
-                public void stateChanged(ChangeEvent e) {
-                    if(!dataRangeSlider.getValueIsAdjusting()) {
-                        repaint();
-                    }
-                }
-            });
+        BackColor = Color.Black;
+        dataMacroSlider.ValueChanged += delegate {
+                Invalidate();
+        };
+
+        dataMicroSlider.ValueChanged += delegate {
+            Invalidate();
+        };
+        if (dataRangeSlider != null) {
+            dataRangeSlider.ValueChanged += delegate
+            {
+                Invalidate();
+            };
         }
     }
 
@@ -55,35 +39,22 @@ public abstract class Visualizer extends JPanel {
         dataMacroSlider = mainInterface.macroSlider;
         dataMicroSlider = mainInterface.microSlider;
         dataRangeSlider = mainInterface.dataSlider;
-        setBackground(Color.black);
-        dataMacroSlider.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                if(dataMacroSlider.getValueIsAdjusting()) {
-                    repaint();
-                }
-            }
-        });
-        dataMicroSlider.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                if(dataMicroSlider.getValueIsAdjusting()) {
-                    repaint();
-                }
-            }
-        });
-        if(dataRangeSlider != null){
-            dataRangeSlider.addChangeListener(new ChangeListener() {
-                public void stateChanged(ChangeEvent e) {
-                    if(!dataRangeSlider.getValueIsAdjusting()) {
-                        repaint();
-                    }
-                }
-            });
+        BackColor = Color.Black;
+        dataMacroSlider.ValueChanged += delegate
+        {
+            Invalidate();
+        };
+        dataMicroSlider.ValueChanged += delegate
+        {
+            Invalidate();
+        };
+        if (dataRangeSlider != null)
+        {
+            dataRangeSlider.ValueChanged += delegate
+                {
+                    Invalidate();
+                };
         }
-    }
-
-    @Override
-    public void paintComponent(Graphics g) {
-        super.paintComponent(g);
     }
 
     public void setColorMapper(ColorMapper mapper) {

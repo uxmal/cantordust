@@ -1,14 +1,7 @@
 // utils
-import java.awt.*;
-import java.util.Collections;
-import java.util.Map;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.TreeSet;
-import java.lang.Error;
-import java.lang.IndexOutOfBoundsException;
+
+using System;
+using System.Collections.Generic;
 
 public class Utils{
     protected Cantordust cantordust;
@@ -19,43 +12,40 @@ public class Utils{
     }
     public double entropy(byte[] data, int blocksize, int offset, int symbols) {
         int start;
-        if(data.length < blocksize){
-            throw new Error("Data length must be larger than block size");
+        if(data.Length < blocksize){
+            throw new ArgumentException("Data length must be larger than block size");
         }
         if(offset < blocksize/2){
             start = 0;
         }
-        else if(offset > data.length-blocksize/2){
-            start = data.length-blocksize/2;
+        else if(offset > data.Length-blocksize/2){
+            start = data.Length-blocksize/2;
         }
         else {
             start = offset-blocksize/2;
         }
-        Map<Byte, Integer> hist = new HashMap<Byte, Integer>();
+        IDictionary<byte, int> hist = new Dictionary<byte, int>();
         for(int i = start; i < start+blocksize; i++){
             int count;
-            if((i == data.length)) {break;}
-            if(hist.get(data[i]) == null){count = 0;}
-            else {count = hist.get(data[i]);}
-            hist.put(data[i], count+1);
+            if((i == data.Length)) {break;}
+            if(hist.ContainsKey(data[i])){count = 0;}
+            else {count = hist[data[i]];}
+            hist[data[i]] = count+1;
         }
-        int base = Math.min(blocksize, symbols);
+        int @base = Math.Min(blocksize, symbols);
         double entropy = 0;
-        Collection c = hist.values();
-        Iterator itr = c.iterator();
-        while(itr.hasNext()) {
-            Integer next = (Integer) itr.next();
+        foreach (var next in hist.Values) {
             double p = next/(double)(blocksize);
             // If blocksize < 256, the number of possible byte values is restricted.
             // In that case, we adjust the log base to make sure we get a value
             // between 0 and 1.
-            double log = (double)Math.log(p)/(double)Math.log(base);
+            double log = (double)Math.Log(p)/(double)Math.Log(@base);
             entropy += (p * log);
         }
         return -entropy;
     }
-    public int graycode(int x){
-        return x^(x>>>1);
+    public uint graycode(uint x){
+        return x^(x>>1);
     }
     public int igraycode(int x){
         if(x==0){
@@ -75,26 +65,26 @@ public class Utils{
             Right bit-rotation.
             width: the bit width of x.
         */
-        assert x < (int)(Math.pow(2, width));
+        assert x < (int)(Math.Pow(2, width));
         i = i%width;
         x = (x>>>i) | (x<<width-i);
-        return x&(int)(Math.pow(2, width)-1);
+        return x&(int)(Math.Pow(2, width)-1);
     }
     public int lrot(int x, int i, int width){
         /*
             Left bit-rotation.
             width: the bit width of x.
         */
-        assert x < Math.pow(2, width);
+        assert x < Math.Pow(2, width);
         i = i%width;
         x = (x<<i) | (x>>>width-i);
-        return x&((int)Math.pow(2, width)-1);
+        return x&((int)Math.Pow(2, width)-1);
     }
     public int tsb(int x, int width){
         /*
             Tailing set bits
         */
-        assert x < (int)Math.pow(2, width);
+        assert x < (int)Math.Pow(2, width);
         int i = 0;
         while((x&1)==1 && i<=width){
             x = x >>> 1;
@@ -110,9 +100,9 @@ public class Utils{
         assert b==1 || b==0;
         assert i<w;
         if(b==1){
-            return x | (int)Math.pow(2, w-i-1);
+            return x | (int)Math.Pow(2, w-i-1);
         } else {
-            return x & ~(int)Math.pow(2, w-i-1);
+            return x & ~(int)Math.Pow(2, w-i-1);
         }
     }
     public int bitrange(int x, int width, int start, int end){
@@ -120,6 +110,6 @@ public class Utils{
             Extract a bit range as an integer.
             (start, end) is inclusive lower bound, exclusive upper bound.
         */
-        return x >>> (width-end) & (int)(Math.pow(2, end-start)-1);
+        return x >>> (width-end) & (int)(Math.Pow(2, end-start)-1);
     }
 }

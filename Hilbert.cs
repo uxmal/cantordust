@@ -1,57 +1,51 @@
 // hilbert
-import java.awt.*;
-import java.util.ArrayList;
+using System;
+using System.Diagnostics;
 
-import java.lang.Error;
-
-public class Hilbert extends Scurve{
+public class Hilbert : Scurve{
     protected int dimension;
     protected int order;
     protected Utils utils;
-    public Hilbert(Cantordust cantordust){
-        super(cantordust);
+    public Hilbert(Cantordust cantordust) : base(cantordust) {
         this.type = "hilbert";
     }
-    public Hilbert(Cantordust cantordust, int dimension, int order){
-        super(cantordust);
+    public Hilbert(Cantordust cantordust, int dimension, int order) : base(cantordust) {
         this.type = "hilbert";
         this.dimension = dimension;
         this.utils = new Utils(this.cantordust);
-        double size = Math.pow(2, dimension*order);
-        float x = (float)Math.log(size)/(float)Math.log(2);
+        double size = Math.Pow(2, dimension*order);
+        float x = (float)Math.Log(size)/(float)Math.Log(2);
         if(!((float)(x)/dimension == (int)(x)/dimension)){
-            throw new Error("Size does not fit Hilbert curve of dimension.");
+            throw new ArgumentException("Size does not fit Hilbert curve of dimension.");
         } else {
             this.order = order;
         }
         this.cantordust.cdprint("dimension: "+dimension+"\norder: "+order+"\n");
     }
-    public Hilbert(Cantordust cantordust, int dimension, double size) {
-        super(cantordust);
+    public Hilbert(Cantordust cantordust, int dimension, double size) : base(cantordust) {
         this.type = "hilbert";
         this.dimension = dimension;
         this.utils = new Utils(cantordust);
         this.cantordust.cdprint("checking size.\n");
-        float x = (float)Math.log(size)/(float)Math.log(2);
+        float x = (float)Math.Log(size)/(float)Math.Log(2);
         if(!((float)(x)/dimension == (int)(x)/dimension)){
-            throw new Error("Size does not fit Hilbert curve of dimension.");
+            throw new ArgumentException("Size does not fit Hilbert curve of dimension.");
         } else {
             this.order = (int)(x/this.dimension);
         }
     }
-    @Override
-    public Hilbert fromSize(String curve, int dimension, int size){
+    public override Scurve fromSize(string curve, int dimension, int size){
         this.cantordust.cdprint("checking size.\n");
-        float x = (float)Math.log(size)/(float)Math.log(2);
+        float x = (float)Math.Log(size)/(float)Math.Log(2);
         if(!((float)(x)/dimension == (int)(x)/dimension)){
-            throw new Error("Size does not fit Hilbert curve of dimension.");
+            throw new ArgumentException("Size does not fit Hilbert curve of dimension.");
         }
         return new Hilbert(cantordust, dimension, (int)(x/dimension));
     }
 
     public int transform(int entry, int direction, int width, int x){
-        assert x < (int)(Math.pow(2, width));
-        assert entry < (int)(Math.pow(2, width));
+        Debug.Assert(x < (int)(Math.Pow(2, width)));
+        Debug.Assert(entry < (int)(Math.Pow(2, width)));
         return this.utils.rrot((x^entry), direction+1, width);
     }
 
@@ -59,8 +53,8 @@ public class Hilbert extends Scurve{
         /*
             Inverse transform - we simply reverse the operations in tranform.
         */
-        assert x < Math.pow(2, width);
-                assert entry < Math.pow(2, width);
+        Debug.Assert (x < Math.Pow(2, width));
+        Debug.Assert(entry < Math.Pow(2, width));
         this.cantordust.cdprint("entry: "+entry+"\td:"+direction+"\n");
         return this.utils.lrot(x, direction+1, width)^entry;
         // There is an error in the Hamilton paper's formulation of the inverse
@@ -70,7 +64,7 @@ public class Hilbert extends Scurve{
 
     // Hilbert calculations
     public int direction(int x, int n){
-        assert x < (int)Math.pow(2, n);
+        Debug.Assert (x < (int)Math.Pow(2, n));
         if(x==0){
             return 0;
         } else if(x%2==0){
@@ -83,7 +77,7 @@ public class Hilbert extends Scurve{
         if(x==0){
             return 0;
         } else {
-            return this.utils.graycode(2*((x-1)/2));
+            return (int) this.utils.graycode(2u*(((uint)x-1)/2));
         }
     }
     public Tuple hilbert_point(int h) {
@@ -102,10 +96,10 @@ public class Hilbert extends Scurve{
         Tuple p;
         if(this.dimension == 2){p = new TwoIntegerTuple(0, 0);}
         else if(this.dimension == 3){p = new Rgb(0, 0, 0);}
-        else { throw new Error("Dimension is incorrect"); }
+        else { throw new ArgumentException("Dimension is incorrect"); }
         for(int i=0;i<order;i++){
             int w = this.utils.bitrange(h, hwidth, i*this.dimension, i*this.dimension+this.dimension);
-            int l = this.utils.graycode(w);
+            int l = (int) this.utils.graycode((uint) w);
             l = itransform(e, d, this.dimension, l);
             for(int j=0;j<this.dimension;j++){
                 int b = this.utils.bitrange(l, this.dimension, j, j+1);
@@ -141,24 +135,20 @@ public class Hilbert extends Scurve{
     }
 
     // basic class functions
-    @Override
-    public int getLength(){
-        return (int)Math.pow(2, this.dimension*this.order);
+    public override int getLength(){
+        return (int)Math.Pow(2, this.dimension*this.order);
     }
-    @Override
-    public Tuple point(int idx){
+    public override Tuple point(int idx){
         return this.hilbert_point(idx);
     }
-    @Override
-    public int index(TwoIntegerTuple p){
+    public override int index(TwoIntegerTuple p){
         return this.hilbert_index(p);
     }
-    @Override
-    public TwoIntegerTuple dimensions(){
+    public override TwoIntegerTuple dimensions(){
         /*
             Size of this curve in each dimension.
         */
-        int x = (int)Math.ceil(Math.pow(getLength(), 1/(float)(this.dimension)));
+        int x = (int)Math.Ceiling(Math.Pow(getLength(), 1/(float)(this.dimension)));
         return new TwoIntegerTuple(x, x);
     }
 }

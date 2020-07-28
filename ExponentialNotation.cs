@@ -1,6 +1,9 @@
 /* A class for noromalized exponential notation. Allows for higher precision than using primitives. */
 
-public class ExponentialNotation implements Comparable<ExponentialNotation>{
+using System;
+using System.Diagnostics;
+
+public class ExponentialNotation : IComparable<ExponentialNotation>{
     // Exponential Notation with base 10
     private double coefficient;
     private long exponent;
@@ -24,7 +27,7 @@ public class ExponentialNotation implements Comparable<ExponentialNotation>{
 
     private void normalize() {
         while (true) {
-            double ma = Math.abs(coefficient);
+            double ma = Math.Abs(coefficient);
             if(ma == 0) {
                 exponent = 0;
                 break;
@@ -42,19 +45,19 @@ public class ExponentialNotation implements Comparable<ExponentialNotation>{
         }
     }
 
-    ExponentialNotation multiply(ExponentialNotation expNot) {
+    public ExponentialNotation multiply(ExponentialNotation expNot) {
         return new ExponentialNotation(coefficient*expNot.coefficient, exponent+expNot.exponent);
     }
 
-    ExponentialNotation divide(ExponentialNotation expNot) {
+    public ExponentialNotation divide(ExponentialNotation expNot) {
         return new ExponentialNotation(coefficient / expNot.coefficient, exponent - expNot.exponent);
     }
 
     ExponentialNotation minus(ExponentialNotation expNot) {
         if(exponent > expNot.exponent) {
-            return new ExponentialNotation(coefficient - expNot.coefficient / Math.pow(10, (exponent - expNot.exponent)), exponent);
+            return new ExponentialNotation(coefficient - expNot.coefficient / Math.Pow(10, (exponent - expNot.exponent)), exponent);
         } else if(expNot.exponent > exponent) {
-            return new ExponentialNotation(expNot.coefficient - coefficient / Math.pow(10, expNot.exponent - exponent), expNot.exponent);
+            return new ExponentialNotation(expNot.coefficient - coefficient / Math.Pow(10, expNot.exponent - exponent), expNot.exponent);
         } else {
             return new ExponentialNotation(coefficient - expNot.coefficient, exponent);
         }
@@ -62,11 +65,11 @@ public class ExponentialNotation implements Comparable<ExponentialNotation>{
 
     ExponentialNotation plus(ExponentialNotation expNot) {
         if (exponent > expNot.exponent) {
-            return new ExponentialNotation(coefficient + expNot.coefficient / Math.pow(10, (exponent - expNot.exponent)), exponent);
+            return new ExponentialNotation(coefficient + expNot.coefficient / Math.Pow(10, (exponent - expNot.exponent)), exponent);
         }
         else if (expNot.exponent > exponent)
         {
-            return new ExponentialNotation(expNot.coefficient + coefficient / Math.pow(10, (expNot.exponent - exponent)), expNot.exponent);
+            return new ExponentialNotation(expNot.coefficient + coefficient / Math.Pow(10, (expNot.exponent - exponent)), expNot.exponent);
         }
         else
         {
@@ -74,14 +77,12 @@ public class ExponentialNotation implements Comparable<ExponentialNotation>{
         }
     }
 
-    @Override
-    public String toString() {
-        return String.format("%f*10^%d", coefficient, exponent);
+    public override string ToString() {
+        return string.Format("{0}*10^{1}", coefficient, exponent);
     }
 
-    @Override
-    public int compareTo(ExponentialNotation right) {
-        assert(right != null);
+    public int CompareTo(ExponentialNotation right) {
+        Debug.Assert(right != null);
         ExponentialNotation left = this;
         // check for same object
         if(left == right) {
@@ -148,9 +149,9 @@ public class ExponentialNotation implements Comparable<ExponentialNotation>{
         }
     }
 
-    public boolean equalTo(ExponentialNotation expNot) {return this.compareTo(expNot) == 0;}
-    public boolean lessThan(ExponentialNotation expNot) {return this.compareTo(expNot) < 0;}
-    public boolean greaterThan(ExponentialNotation expNot) {return this.compareTo(expNot) > 0;}
+    public bool equalTo(ExponentialNotation expNot) {return this.CompareTo(expNot) == 0;}
+    public bool lessThan(ExponentialNotation expNot) {return this.CompareTo(expNot) < 0;}
+    public bool greaterThan(ExponentialNotation expNot) {return this.CompareTo(expNot) > 0;}
 
     public static double getDouble(ExponentialNotation expNot) {
         double coefficient = expNot.coefficient;
@@ -181,8 +182,7 @@ public class ExponentialNotation implements Comparable<ExponentialNotation>{
         return coefficient;
     }
 
-    @Override
-    public int hashCode() {
+    public override int GetHashCode() {
         return (int)((((coefficient+exponent)*(coefficient+exponent+1))/2 + exponent));
     }
 }

@@ -1,39 +1,22 @@
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
+using System.Drawing;
+using System.Threading;
+using System.Windows.Forms;
 
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-import javax.swing.JSlider;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-
-public class BitMapVisualizer extends Visualizer {
-    private JSlider dataWidthSlider;
-    private JSlider dataOffsetSlider;
-    private JButton dataWidthDownButton;
-    private JButton dataWidthUpButton;
-    private JButton dataOffsetDownButton;
-    private JButton dataOffsetUpButton;
-    private JButton dataMicroUpButton;
+public class BitMapVisualizer : Visualizer {
+    private ScrollBar dataWidthSlider;
+    private ScrollBar dataOffsetSlider;
+    private Button dataWidthDownButton;
+    private Button dataWidthUpButton;
+    private Button dataOffsetDownButton;
+    private Button dataOffsetUpButton;
+    private Button dataMicroUpButton;
     private int mode;
 
     private Image img;
 
-    public BitMapVisualizer(int windowSize, Cantordust cantordust, JFrame frame) {
-        super(windowSize, cantordust);                
+    public BitMapVisualizer(int windowSize, Cantordust cantordust, Form frame) :
+        base(windowSize, cantordust)
+    { 
         dataWidthSlider = mainInterface.widthSlider;
         dataOffsetSlider = mainInterface.offsetSlider;
         dataWidthDownButton = mainInterface.widthDownButton;
@@ -42,195 +25,156 @@ public class BitMapVisualizer extends Visualizer {
         dataOffsetUpButton = mainInterface.offsetUpButton;
         dataMicroUpButton = mainInterface.microUpButton;
         mode = 0;
-        this.img = new BufferedImage(1,1,1);
+        this.img = new Bitmap(1,1);
         createPopupMenu(frame);
 
-        dataMacroSlider.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                if(!dataMacroSlider.getValueIsAdjusting()) {
-                    constructImageAsync();
-                }
-            }
-        });
-        dataMicroSlider.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                if(!dataMicroSlider.getValueIsAdjusting() && !dataMacroSlider.getValueIsAdjusting()) {
-                    constructImageAsync();
-                }
-            }
-        });
+        dataMacroSlider.ValueChanged += delegate {
+            constructImageAsync();
+        };
+        dataMicroSlider.ValueChanged += delegate {
+            constructImageAsync();
+        };
 
-        dataWidthSlider.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                if(!dataWidthSlider.getValueIsAdjusting()) {
-                    constructImageAsync();
-                }
-            }
-        });
-        dataOffsetSlider.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                if(!dataOffsetSlider.getValueIsAdjusting()) {
-                    constructImageAsync();
-                }
-            }
-        });
-        dataWidthDownButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+        dataWidthSlider.ValueChanged += delegate {
+            constructImageAsync();
+        };
+        dataOffsetSlider.ValueChanged += delegate {
+            constructImageAsync();
+        };
+        dataWidthDownButton.Click += delegate {
+            constructImageAsync();
+        };
+        dataWidthUpButton.Click += delegate {
+            constructImageAsync();
+        };
+        dataOffsetDownButton.Click += delegate {
+            constructImageAsync();
+        };
+        dataOffsetUpButton.Click += delegate {
                 constructImageAsync();
-            }
-        });
-        dataWidthUpButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                constructImageAsync();
-            }
-        });
-        dataOffsetDownButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                constructImageAsync();
-            }
-        });
-        dataOffsetUpButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                constructImageAsync();
-            }
-        });        
-        dataMicroUpButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                constructImageAsync();
-            }
-        });
+        };
+        dataMicroUpButton.Click += delegate {
+            constructImageAsync();
+        };
 
-        this.addComponentListener(new ComponentAdapter() {
-            public void componentResized(ComponentEvent e) {
-                constructImageAsync();
-            }
-        });
+        this.SizeChanged += delegate {
+            constructImageAsync();
+        };
 
         // Wait for the window to be loaded before building an image
-        new Thread(() -> {
-            while(this.getVisibleRect().getWidth() == 0) {
+        new Thread(() => {
+            while(this.ClientRectangle.Width == 0) {
             	// Wait for the window to be loaded
             }
 
             constructImage();
         }).start();
     }
-    
-    public void createPopupMenu(JFrame frame){
-        JPopupMenu popup = new JPopupMenu("test1");
-        JMenuItem bpp_8 = new JMenuItem("8bpp");
-        bpp_8.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {    
-                mode = 0;
-                constructImageAsync();
-            }
-        });
-        popup.add(bpp_8);
-        
-        JMenuItem argb_32 = new JMenuItem("32bpp ARGB");
-        argb_32.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                mode = 1;
-                constructImageAsync();
-            }
-        });
-        popup.add(argb_32);
-        
-        JMenuItem bpp_24 = new JMenuItem("24bpp RGB");
-        bpp_24.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {    
-                mode = 2;
-                constructImageAsync();
-            }
-        });
-        popup.add(bpp_24);
 
-        JMenuItem bpp_16 = new JMenuItem("16bpp ARGB1555");
-        bpp_16.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {    
-                mode = 3;
-                constructImageAsync();
-            }
-        });
-        popup.add(bpp_16);
+    public void createPopupMenu(Form frame) {
+        ContextMenuStrip popup = new ContextMenuStrip() { Name = "test1" };
+        ToolStripMenuItem bpp_8 = new ToolStripMenuItem("8bpp");
+        bpp_8.Click += delegate {
+            mode = 0;
+            constructImageAsync();
+        };
+        popup.Items.Add(bpp_8);
 
-        JMenuItem entropy = new JMenuItem("Entropy");
-        entropy.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {    
-                mode = 4;
-                constructImageAsync();
-            }
-        });
-        popup.add(entropy);
-        
-        this.addMouseListener(new MouseAdapter() {  
-            public void mouseReleased(MouseEvent e) {  
-                if(e.getButton() == 3){
-                    popup.show(frame, BitMapVisualizer.this.getX() + e.getX(), BitMapVisualizer.this.getY() + e.getY());
-                }
-            }                 
-        });  
+        ToolStripMenuItem argb_32 = new ToolStripMenuItem("32bpp ARGB");
+        argb_32.Click += delegate {
+            mode = 1;
+            constructImageAsync();
+        };
+        popup.Items.Add(argb_32);
 
-        this.add(popup);
+        ToolStripMenuItem bpp_24 = new ToolStripMenuItem("24bpp RGB");
+        bpp_24.Click += delegate {
+            mode = 2;
+            constructImageAsync();
+        };
+        popup.Items.Add(bpp_24);
+
+        ToolStripMenuItem bpp_16 = new ToolStripMenuItem("16bpp ARGB1555");
+        bpp_16.Click += delegate {
+            mode = 3;
+            constructImageAsync();
+        };
+        popup.Items.Add(bpp_16);
+
+        ToolStripMenuItem entropy = new ToolStripMenuItem("Entropy");
+        entropy.Click += delegate {
+            mode = 4;
+            constructImageAsync();
+        };
+        popup.Items.Add(entropy);
+
+        this.MouseUp += (sender, e) =>
+        {
+            if (e.Button == MouseButtons.Right)
+            {
+                popup.Show(frame, this.Location.X + e.X, this.Location.Y + e.Y);
+            }
+        };
+        this.ContextMenuStrip = popup;
     }
-        
-    @Override
-    public void paintComponent(Graphics g) {
-        super.paintComponent(g);
+
+    protected override void OnPaint(PaintEventArgs e)
+    {
+        base.OnPaint(e);
 
         if (img != null)
-            g.drawImage(img, 0, 0, this);
+            e.Graphics.DrawImage(img, 0, 0);
     }
 
     public void constructImageAsync() {
-        new Thread(() -> {
+        new Thread(() => {
             constructImage();
-        }).start();
+        }).Start();
     }
 
     private void constructImage() {
-        dataMicroSlider.setMinimum(dataMacroSlider.getValue());
-        dataMicroSlider.setMaximum(dataMacroSlider.getUpperValue());
+        dataMicroSlider.Minimum = (dataMacroSlider.getValue());
+        dataMicroSlider.Maximum = (dataMacroSlider.getUpperValue());
         int low = dataMicroSlider.getValue();
         int high = dataMicroSlider.getUpperValue();
-        int width = dataWidthSlider.getValue();
-        int offset = dataOffsetSlider.getValue();
+        int width = dataWidthSlider.Value;
+        int offset = dataOffsetSlider.Value;
 
         byte[] data = mainInterface.getData();
-        byte[] data_offset = new byte[data.length];
+        byte[] data_offset = new byte[data.Length];
         int xMax = width;
         int y = 0;
         int x = 0;
         int i = 0;
 
-        Rectangle window = getVisibleRect();
+        Rectangle window = ClientRectangle; //$ getVisibleRect
 
-        for(i = 0; i < data.length - offset; i++){
+        for(i = 0; i < data.Length - offset; i++){
             data_offset[i] = data[i + offset];
         }
-        for(i = data.length-offset; i < data.length; i++){
+        for(i = data.Length-offset; i < data.Length; i++){
             data_offset[i] = 0;
         }
 
-        Graphics2D g;
-        BufferedImage bimg;
+        Graphics g;
+        Bitmap bimg;
 
         switch(mode) {
             //32bpp ARGB
             case 1:
-                bimg = new BufferedImage(width, (high-low)/xMax/4 + 1, BufferedImage.TYPE_INT_ARGB);
-                g = bimg.createGraphics();
+                bimg = new Bitmap(width, (high - low) / xMax / 4 + 1); //$ BufferedImage.TYPE_INT_ARGB);
+                g = Graphics.FromImage(bimg);
                 for(i = low; i < high-4; i+=4) {
                     int pixel = ((data_offset[i+3] << 24) + (data_offset[i+2] << 16) + (data_offset[i+1] << 8) + data_offset[i]) & 0xFFFFFFFF;
                     g.setColor(new Color(pixel, true));
-                    g.fill(new Rectangle2D.Double(x, y, 1, 1));
+                    g.FillRectangle(new Rectangle2D.Double(x, y, 1, 1));
                     x++;
                     if(x == xMax) {
                         y++;
                         x = 0;
                     }
                 }
-                g.dispose();
+                g.Dispose();
                 break;
 
             //24bpp RGB
@@ -272,8 +216,8 @@ public class BitMapVisualizer extends Visualizer {
 
             // entropy
             case 4:
-                bimg = new BufferedImage(width, (high-low)/xMax + 1, BufferedImage.TYPE_INT_ARGB);
-                g = bimg.createGraphics();
+                bimg = new Bitmap(width, (high - low) / xMax + 1); //$ BufferedImage.TYPE_INT_ARGB);
+                g = Graphics.FromImage(bimg);
                 ColorEntropy entropy = new ColorEntropy(cantordust, data);
                 for (i = low; i < high; i++){
                     Rgb rgb = entropy.getPoint(i);

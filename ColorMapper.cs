@@ -1,13 +1,13 @@
-import java.awt.Color;
+using System.Drawing;
 
 public abstract class ColorMapper {
     protected Cantordust cantordust;
     protected byte[] data;
 
-    ColorMapper(Cantordust cantordust) {
+    public ColorMapper(Cantordust cantordust) {
         this.cantordust = cantordust;
         this.data = cantordust.getData();
     }
 
-    abstract Color colorAtIndex(int index);
+    public abstract Color colorAtIndex(int index);
 }
